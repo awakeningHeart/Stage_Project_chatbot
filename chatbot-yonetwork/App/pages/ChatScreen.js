@@ -148,7 +148,7 @@ const ChatScreen = () => {
                 // Afficher un message initial pour la nouvelle conversation
                 const initialMessage = {
                     _id: 1,
-                    text: `Hello! I'm ${selectedFace?.name || 'Assistant'}. How can I help you with this new conversation?`,
+                    text: `Bonjour ! Je suis ${selectedFace?.name || 'Assistant'}. Comment puis-je vous aider avec cette nouvelle conversation ?`,
                     createdAt: new Date(),
                     user: {
                         _id: 2,
@@ -184,10 +184,10 @@ const ChatScreen = () => {
             route.params?.resetConversation;
             
         if (shouldShowWelcome && messages.length === 0) {
-        console.log('ChatScreen mounted with selectedFace:', selectedFace);
+        console.log('Écran de discussion monté avec selectedFace :', selectedFace);
             const initialMessage = {
                 _id: 1,
-                text: `Hello! I'm ${selectedFace?.name || 'Assistant'}. How can I help you?`,
+                text: `Hello! I'm ${selectedFace?.name || 'Assistant'}. Comment puis-je t'aider?`,
                 createdAt: new Date(),
                 user: {
                     _id: 2,
@@ -195,7 +195,7 @@ const ChatScreen = () => {
                     avatar: selectedFace?.image,
                 },
             };
-            console.log('Setting initial message:', initialMessage);
+            console.log('Définition du message initial :', initialMessage);
             setMessages([initialMessage]);
         }
     }, [selectedFace, route.params, messages.length]);
@@ -270,7 +270,7 @@ const ChatScreen = () => {
                 if (selectedFace) {
         const initialMessage = {
             _id: 1,
-            text: `Hello! I'm ${selectedFace.name}. How can I help you?`,
+            text: `Bonjour ! Je suis ${selectedFace.name}. Comment puis-je t'aider?`,
             createdAt: new Date(),
             user: {
                 _id: 2,
@@ -458,7 +458,7 @@ const ChatScreen = () => {
                             style={styles.quickQuestionButton}
                             onPress={() => handleQuickQuestion(question)}
                         >
-                            <MaterialIcons name={question.icon} size={20} color="#4CAF50" />
+                            <MaterialIcons name={question.icon} size={20} color="#0A1E3F" />
                             <Text style={styles.quickQuestionText}>{question.text}</Text>
                         </TouchableOpacity>
                     ))}
@@ -466,14 +466,13 @@ const ChatScreen = () => {
             </View>
         </View>
     );
-
     const renderBubble = (props) => {
         return (
             <Bubble
                 {...props}
                 wrapperStyle={{
                     right: {
-                        backgroundColor: '#E8E8E8',
+                        backgroundColor: '#OA1E3F',
                         borderRadius: 20,
                         borderBottomRightRadius: 6,
                         shadowColor: '#000',
@@ -484,7 +483,7 @@ const ChatScreen = () => {
                         marginHorizontal: 5,
                     },
                     left: {
-                        backgroundColor: '#4CAF50',
+                        backgroundColor: '#0A1E3F',
                         borderRadius: 20,
                         borderBottomLeftRadius: 6,
                         shadowColor: '#000',
@@ -522,7 +521,7 @@ const ChatScreen = () => {
                         style={[styles.sendButton, styles.cancelButton]}
                         onPress={() => onSend([])} // Appeler onSend sans message pour annuler
                     >
-                        <MaterialIcons name="close" size={24} color="#fff" />
+                        <MaterialIcons name="close" size={24} color="#999" />
                     </TouchableOpacity>
                 </Send>
             );
@@ -536,56 +535,63 @@ const ChatScreen = () => {
                 alwaysShowSend={true}
             >
                 <View style={styles.sendButton}>
-                    <MaterialIcons name="send" size={24} color="#fff" />
+                    <MaterialIcons name="send" size={24} color="#999" />
                 </View>
             </Send>
         );
     };
 
-    const renderInputToolbar = (props) => {
+    // Fonction personnalisée pour afficher la barre d'entrée de texte (input)
+const renderInputToolbar = (props) => {
+    return (
+        <InputToolbar
+            {...props} // On passe toutes les props d'origine fournies par GiftedChat
+            containerStyle={styles.inputToolbarContainer} // Style du conteneur principal de la barre d'entrée
+            primaryStyle={styles.inputToolbarPrimary}     // Style de la zone de saisie à l'intérieur de la barre
+        />
+    );
+};
+
+// Fonction personnalisée pour le champ de texte où l'utilisateur écrit son message
+const renderComposer = (props) => {
+    return (
+        <Composer
+            {...props} // On hérite des comportements de base
+            textInputStyle={styles.composerInput}         // Style personnalisé du champ de texte
+            placeholderTextColor="#999"                   // Couleur du texte du placeholder
+            placeholder="Posez votre question..."         // Texte affiché par défaut dans le champ
+        />
+    );
+};
+
+// Fonction pour afficher un indicateur de saisie animé pendant que le bot "écrit"
+const renderFooter = () => {
+    if (isLoading) {
         return (
-            <InputToolbar
-                {...props}
-                containerStyle={styles.inputToolbarContainer}
-                primaryStyle={styles.inputToolbarPrimary}
-            />
+            <View style={styles.typingContainer}>
+                <TypingIndicator /> {/* Composant animé avec des points animés */}
+                <Text style={styles.typingText}>
+                    {selectedFace.name} écrit... {/* Affiche le nom de l'avatar ou personne qui écrit */}
+                </Text>
+            </View>
         );
-    };
+    }
+    return null; // Si rien ne charge, on ne retourne rien
+};
 
-    const renderComposer = (props) => {
+// Fonction pour afficher un message animé si l'utilisateur perd sa connexion Internet
+const renderConnectionStatus = () => {
+    if (!isConnected) {
         return (
-            <Composer
-                {...props}
-                textInputStyle={styles.composerInput}
-                placeholderTextColor="#999"
-                placeholder="Posez votre question..."
-            />
+            <Animated.View style={[styles.connectionStatus, { opacity: fadeAnim }]}>
+                <Ionicons name="wifi-off" size={20} color="white" /> {/* Icône de WiFi désactivé */}
+                <Text style={styles.connectionText}>Pas de connexion internet</Text> {/* Message texte */}
+            </Animated.View>
         );
-    };
+    }
+    return null; // Si connecté, aucun message n'est affiché
+};
 
-    const renderFooter = () => {
-        if (isLoading) {
-            return (
-                <View style={styles.typingContainer}>
-                    <TypingIndicator />
-                    <Text style={styles.typingText}>{selectedFace.name} écrit...</Text>
-                </View>
-            );
-        }
-        return null;
-    };
-
-    const renderConnectionStatus = () => {
-        if (!isConnected) {
-            return (
-                <Animated.View style={[styles.connectionStatus, { opacity: fadeAnim }]}>
-                    <Ionicons name="wifi-off" size={20} color="white" />
-                    <Text style={styles.connectionText}>Pas de connexion internet</Text>
-                </Animated.View>
-            );
-        }
-        return null;
-    };
 
     // Conditional rendering after all hooks
     if (!selectedFace) {
@@ -617,7 +623,7 @@ const ChatScreen = () => {
                         style={styles.sidebarToggleButton}
                         onPress={() => toggleSidebar(false)}
                     >
-                        <Feather name="sidebar" size={24} color="#4CAF50" />
+                        <Feather name="sidebar" size={24} color="#0A1E3F" />
                     </TouchableOpacity>
                     
                     <Sidebar 
@@ -636,9 +642,9 @@ const ChatScreen = () => {
                         }
                     ]}
                 >
-            {renderConnectionStatus()}
+                 {renderConnectionStatus()}
                     <LinearGradient
-                        colors={['#4CAF50', '#45a049']}
+                        colors={['#003366', '#002244']}
                         style={styles.header}
                     >
                         {/* Bouton d'ouverture de la sidebar dans le header */}
@@ -647,7 +653,7 @@ const ChatScreen = () => {
                                 style={styles.menuButton}
                                 onPress={() => toggleSidebar(true)}
                 >
-                                <Feather name="sidebar" size={24} color="#fff" />
+                                <Feather name="sidebar" size={24} color="#0A1E3F" />
                 </TouchableOpacity>
                         </Animated.View>
                         
@@ -661,11 +667,11 @@ const ChatScreen = () => {
                         </View>
                         <View style={styles.logoContainer}>
                             <Image 
-                                source={require('../../assets/newlogo.png')}
+                                source={require('../../assets/favicon.jpg')}
                                 style={styles.logo}
-                                resizeMode="contain"
-                />
-            </View>
+                                resizeMode="cover"
+                            />        
+                        </View>
                     </LinearGradient>
                     
                     {showWelcome && <WelcomeMessage />}
@@ -703,14 +709,19 @@ const ChatScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    // Conteneur principal de l'application
     container: {
         flex: 1,
         backgroundColor: '#f8f9fa',
     },
+
+    // Conteneur pour la disposition générale en ligne
     layoutContainer: {
         flex: 1,
         flexDirection: 'row',
     },
+
+    // Style de la barre latérale
     sidebarContainer: {
         position: 'absolute',
         top: 0,
@@ -725,6 +736,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+
+    // Bouton pour ouvrir ou fermer la sidebar
     sidebarToggleButton: {
         position: 'absolute',
         top: 20,
@@ -742,10 +755,14 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 2,
     },
+
+    // Conteneur du contenu principal
     mainContent: {
         flex: 1,
         backgroundColor: '#f8f9fa',
     },
+
+    // En-tête de l'application
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -757,15 +774,19 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 3,
     },
+
+    // Bouton menu dans le header
     menuButton: {
         width: 35,
         height: 35,
         borderRadius: 17.5,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: '#A1E3F',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 10,
     },
+
+    // Avatar utilisateur
     avatar: {
         width: 45,
         height: 45,
@@ -773,45 +794,60 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'rgba(255,255,255,0.3)',
     },
+
+    // Informations utilisateur dans le header
     headerInfo: {
         flex: 1,
         marginLeft: 10,
     },
+
+    // Nom de l'utilisateur
     headerTitle: {
-        color: '#fff',
+        color: '#FFFFFF',
         fontSize: 18,
         fontWeight: '600',
     },
+
+    // Sous-titre (ex: statut) de l'utilisateur
     headerSubtitle: {
         color: 'rgba(255,255,255,0.9)',
         fontSize: 13,
         marginTop: 2,
     },
+
+    // Conteneur du logo
     logoContainer: {
-        backgroundColor: '#fff',
-        padding: 8,
-        borderRadius: 12,
+        backgroundColor: '#OA1E3F',
+        padding: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
-        width: 80,
-        height: 50,
+        width: 90,
+        height: 70,
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 10
     },
+
+    // Style de l'image du logo
     logo: {
         width: '100%',
-        height: '100%'
+        height: '100%',
+        borderRadius: 50,
+        overflow: 'hidden'
     },
+
+    // Conteneur du message de bienvenue
     welcomeContainer: {
-        padding: 10,
+        padding: 28,
         alignItems: 'center',
         justifyContent: 'center',
         flex: 1,
     },
+
+    // Carte contenant le message de bienvenue
     welcomeMessage: {
         backgroundColor: '#fff',
         borderRadius: 15,
@@ -824,6 +860,8 @@ const styles = StyleSheet.create({
         width: '80%',
         maxWidth: 350,
     },
+
+    // Titre du message de bienvenue
     welcomeTitle: {
         fontSize: 18,
         fontWeight: '600',
@@ -831,30 +869,39 @@ const styles = StyleSheet.create({
         marginBottom: 6,
         textAlign: 'center',
     },
+
+    // Sous-titre du message de bienvenue
     welcomeSubtitle: {
         fontSize: 13,
-        color: '#6c757d',
+        color: '#0A1E3F',
         marginBottom: 12,
         textAlign: 'center',
     },
+
+    // Conteneur des questions rapides
     quickQuestionsContainer: {
         maxHeight: 180,
     },
+
+    // Boutons pour les questions rapides
     quickQuestionButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f8f9fa',
         padding: 10,
         borderRadius: 20,
-        marginBottom: 6,
+        marginBottom: 2,
         borderWidth: 1,
-        borderColor: '#e9ecef',
+        borderColor: '#0A1E3F'
     },
+
+    // Texte des boutons de questions rapides
     quickQuestionText: {
         marginLeft: 10,
         fontSize: 14,
-        color: '#495057',
+        color: '#141414'
     },
+
+    // Conteneur de la barre d'entrée du message
     inputToolbarContainer: {
         backgroundColor: '#f8f9fa',
         borderTopWidth: 1,
@@ -862,32 +909,40 @@ const styles = StyleSheet.create({
         padding: 10,
         marginHorizontal: 5,
     },
+
+    // Élément principal de la barre d'entrée
     inputToolbarPrimary: {
         alignItems: 'center',
     },
+
+    // Champ de saisie du message
     composerInput: {
         backgroundColor: '#fff',
         borderRadius: 25,
         paddingHorizontal: 15,
         paddingVertical: 10,
         fontSize: 15,
-        color: '#000',
+        color: '#OA1E3F',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
     },
+
+    // Conteneur du bouton d’envoi
     sendButtonContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 10,
     },
+
+    // Bouton pour envoyer un message
     sendButton: {
         width: 45,
         height: 45,
         borderRadius: 22.5,
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#0A1E3F',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
@@ -896,9 +951,13 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 3,
     },
+
+    // Style pour le bouton d'annulation
     cancelButton: {
-        backgroundColor: '#FF5252',
+        backgroundColor: '#0A1E3F',
     },
+
+    // Conteneur de l'indicateur de frappe
     typingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -909,10 +968,14 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         alignSelf: 'flex-start',
     },
+
+    // Groupe des points de frappe
     typingIndicator: {
         flexDirection: 'row',
         alignItems: 'center',
     },
+
+    // Point de frappe 1
     typingDot: {
         width: 6,
         height: 6,
@@ -920,34 +983,46 @@ const styles = StyleSheet.create({
         backgroundColor: '#9e9e9e',
         marginHorizontal: 2,
     },
+
+    // Point 2 : plus petit
     typingDot2: {
         opacity: 0.7,
         transform: [{ scale: 0.8 }]
     },
+
+    // Point 3 : encore plus petit
     typingDot3: {
         opacity: 0.4,
         transform: [{ scale: 0.6 }]
     },
+
+    // Texte indiquant "Utilisateur est en train d'écrire..."
     typingText: {
         marginLeft: 8,
         fontSize: 13,
         color: '#666',
     },
+
+    // Liste des messages du chat
     chatList: {
         flex: 1,
         width: '100%',
     },
+
+    // Contenu de la liste des messages
     chatListContent: {
         paddingHorizontal: 5,
         paddingBottom: 10,
         alignItems: 'stretch',
     },
+
+    // Bandeau indiquant l’état de connexion
     connectionStatus: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#FF5252',
+        backgroundColor: '#0A1E3F',
         padding: 10,
         flexDirection: 'row',
         alignItems: 'center',
@@ -962,17 +1037,23 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5
     },
+
+    // Texte de l'état de connexion
     connectionText: {
         color: 'white',
         marginLeft: 8,
         fontSize: 14,
     },
+
+    // Conteneur de l'écran de chargement
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#f8f9fa',
     },
+
+    // Texte affiché pendant le chargement
     loadingText: {
         marginTop: 10,
         fontSize: 16,
@@ -980,33 +1061,38 @@ const styles = StyleSheet.create({
     },
 });
 
-// Ajouter une animation pour les points de typing
-const TypingIndicator = () => {
-    const [dot1Opacity] = useState(new Animated.Value(1));
-    const [dot2Opacity] = useState(new Animated.Value(0.7));
-    const [dot3Opacity] = useState(new Animated.Value(0.4));
 
+// Ajouter une animation pour les points de typing
+// Déclaration d'un composant fonctionnel React Native appelé TypingIndicator
+const TypingIndicator = () => {
+    // Création des états pour contrôler l'opacité de chaque point animé
+    const [dot1Opacity] = useState(new Animated.Value(1));    // Point 1 : commence avec une opacité maximale
+    const [dot2Opacity] = useState(new Animated.Value(0.7));  // Point 2 : opacité moyenne
+    const [dot3Opacity] = useState(new Animated.Value(0.4));  // Point 3 : opacité minimale
+
+    // Hook useEffect lancé au montage du composant
     useEffect(() => {
+        // Fonction récursive qui gère l'animation en boucle
         const animate = () => {
-            Animated.sequence([
-                Animated.parallel([
+            Animated.sequence([ // Exécute les animations dans un ordre séquentiel
+                Animated.parallel([ // Premier groupe d'animations en parallèle
                     Animated.timing(dot1Opacity, {
-                        toValue: 0.4,
+                        toValue: 0.4, // Point 1 devient plus transparent
                         duration: 400,
                         useNativeDriver: true
                     }),
                     Animated.timing(dot2Opacity, {
-                        toValue: 1,
+                        toValue: 1, // Point 2 devient complètement opaque
                         duration: 400,
                         useNativeDriver: true
                     }),
                     Animated.timing(dot3Opacity, {
-                        toValue: 0.7,
+                        toValue: 0.7, // Point 3 devient moyennement opaque
                         duration: 400,
                         useNativeDriver: true
                     })
                 ]),
-                Animated.parallel([
+                Animated.parallel([ // Deuxième groupe
                     Animated.timing(dot1Opacity, {
                         toValue: 0.7,
                         duration: 400,
@@ -1023,7 +1109,7 @@ const TypingIndicator = () => {
                         useNativeDriver: true
                     })
                 ]),
-                Animated.parallel([
+                Animated.parallel([ // Troisième groupe
                     Animated.timing(dot1Opacity, {
                         toValue: 1,
                         duration: 400,
@@ -1040,12 +1126,13 @@ const TypingIndicator = () => {
                         useNativeDriver: true
                     })
                 ])
-            ]).start(() => animate());
+            ]).start(() => animate()); // Relance l'animation une fois terminée (boucle infinie)
         };
 
-        animate();
+        animate(); // Démarre l'animation au montage du composant
     }, []);
 
+    // Rendu visuel : 3 cercles animés représentant l'indicateur de saisie
     return (
         <View style={styles.typingIndicator}>
             <Animated.View style={[styles.typingDot, { opacity: dot1Opacity }]} />
@@ -1054,5 +1141,6 @@ const TypingIndicator = () => {
         </View>
     );
 };
+
 
 export default ChatScreen;

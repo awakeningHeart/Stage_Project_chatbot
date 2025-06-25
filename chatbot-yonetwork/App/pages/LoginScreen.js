@@ -1,4 +1,6 @@
+// Importation des hooks et composants nécessaires
 import React, { useState, useEffect } from 'react';
+import { Pressable } from 'react-native';
 import {
     View,
     Text,
@@ -14,15 +16,17 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+
+// Importation des services API et stockage
 import GlobalApiAuth from '../Services/GlobalApiAuth';
 import ChatFaceData from '../Services/ChatFaceData';
 import AuthStorage from '../Services/AuthStorage';
 
+
+// Définition du composant LoginScreen
 const LoginScreen = ({ navigation, route }) => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
+    // États pour gérer les données du formulaire, erreurs, chargement, mot de passe visible, etc.
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +34,7 @@ const LoginScreen = ({ navigation, route }) => {
     const [resendCooldown, setResendCooldown] = useState(0);
     const [error, setError] = useState(null);
 
-    // Cooldown timer
+    // Décrémentation automatique du délai pour le renvoi d'email
     useEffect(() => {
         let timer;
         if (resendCooldown > 0) {
@@ -41,17 +45,18 @@ const LoginScreen = ({ navigation, route }) => {
         return () => clearInterval(timer);
     }, [resendCooldown]);
 
+    // Fonction de validation du formulaire
     const validateForm = () => {
         const newErrors = {};
-        
-        // Validation de l'email
+
+        // Vérification de l'email
         if (!formData.email) {
             newErrors.email = 'Veuillez entrer votre adresse email';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Veuillez entrer une adresse email valide (exemple: nom@domaine.com)';
+            newErrors.email = 'Veuillez entrer une adresse email valide (exemple: soukbot@gmail.com)';
         }
 
-        // Validation du mot de passe
+        // Vérification du mot de passe
         if (!formData.password) {
             newErrors.password = 'Veuillez entrer votre mot de passe';
         }
@@ -60,20 +65,17 @@ const LoginScreen = ({ navigation, route }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    // Fonction de renvoi de l'email de vérification
     const handleResendVerification = async () => {
         setLoading(true);
         try {
             const response = await GlobalApiAuth.resendVerificationEmail(formData.email);
-            setResendCooldown(60);
-            Alert.alert(
-                'Email envoyé',
-                'Un nouvel email de vérification a été envoyé à votre adresse.',
-                [{ text: 'OK' }]
-            );
+            setResendCooldown(60); // Bloquer pendant 60s
+            Alert.alert('Email envoyé', 'Un nouvel email de vérification a été envoyé.', [{ text: 'OK' }]);
         } catch (error) {
             let errorMessage = error.message || 'Erreur lors du renvoi de l\'email';
             if (errorMessage.includes('attendre')) {
-                // Extraire le nombre de secondes du message
+                // Récupérer le nombre de secondes depuis le message d’erreur
                 const seconds = parseInt(errorMessage.match(/\d+/)?.[0] || '60', 10);
                 setResendCooldown(seconds);
             }
@@ -83,6 +85,7 @@ const LoginScreen = ({ navigation, route }) => {
         }
     };
 
+    // Fonction de connexion
     const handleSubmit = async () => {
         if (!validateForm()) return;
 
@@ -90,34 +93,36 @@ const LoginScreen = ({ navigation, route }) => {
         setError(null);
 
         try {
+            // Appel à l’API d’authentification
             const response = await GlobalApiAuth.login(formData.email, formData.password);
             console.log('Réponse de connexion:', response);
 
             if (response.token) {
-                // Créer une session d'authentification locale
+                // Enregistrement des informations d’authentification localement
                 await AuthStorage.createAuthSession(
                     response.token,
                     response.user,
                     response.refreshToken,
-                    86400 // 24 hours in seconds
+                    86400 // Durée de session : 24h
                 );
-                
-                // Créer une session serveur
+
+                // Création d'une session serveur avec infos du device
                 const deviceInfo = {
                     platform: Platform.OS,
                     version: Platform.Version,
                     appVersion: '1.0.0'
                 };
-                
+
                 const sessionId = await AuthStorage.createServerSession(
                     response.user.id,
                     deviceInfo
                 );
-                
+
                 if (!sessionId) {
                     console.warn('Impossible de créer une session serveur, mais la connexion est réussie');
                 }
-                
+
+                // Redirection vers l'écran du chatbot
                 navigation.replace('Chat', {
                     selectedFace: route.params?.selectedFace || {
                         id: 1,
@@ -132,7 +137,6 @@ const LoginScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Erreur de connexion:', error);
-            // Vérifier si l'erreur contient des informations sur la vérification
             if (error.message && error.message.includes('compte non vérifié')) {
                 setError('Votre compte n\'est pas encore vérifié. Veuillez vérifier votre email.');
                 setShowResend(true);
@@ -144,55 +148,62 @@ const LoginScreen = ({ navigation, route }) => {
         }
     };
 
+    // Interface utilisateur
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
         >
             <LinearGradient
-                colors={['#ffffff', '#f5f5f5']}
+                colors={['#OA1E3F', '#F55F55', '#ffffff']}
                 style={styles.gradient}
             >
+                {/* Bouton de retour */}
                 <TouchableOpacity 
                     style={styles.backButton}
                     onPress={() => navigation.navigate('Home')}
                     disabled={loading}
                 >
-                    <Ionicons name="arrow-back" size={24} color="#4CAF50" />
+                <Ionicons name="arrow-back" size={24} color="#OA1E3F" />
                 </TouchableOpacity>
+
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <View style={styles.formContainer}>
-                <Image
-                            source={require('../../assets/newlogo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
+                        {/* Logo de l'application */}
+                        <Image
+                            source={require('../../assets/favicon.jpg')}
+                            style={styles.logo}
+                            resizeMode="cover"
+                        />
 
-            <View style={styles.inputContainer}>
+                        {/* Champ Email */}
+                        <View style={styles.inputContainer}>
                             <View style={styles.inputWrapper}>
-                                <Ionicons name="mail-outline" size={24} color="#4CAF50" style={styles.inputIcon} />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
+                                <Ionicons name="mail-outline" size={24} color="#OA1E3F" style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Email"
                                     value={formData.email}
                                     onChangeText={(text) => setFormData({ ...formData, email: text })}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
                             </View>
                             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-            </View>
+                        </View>
 
-            <View style={styles.inputContainer}>
+                        {/* Champ Mot de passe */}
+                        <View style={styles.inputContainer}>
                             <View style={styles.inputWrapper}>
-                                <Ionicons name="lock-closed-outline" size={24} color="#4CAF50" style={styles.inputIcon} />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Mot de passe"
+                                <Ionicons name="lock-closed-outline" size={24} color="#OA1E3F" style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Mot de passe"
                                     value={formData.password}
                                     onChangeText={(text) => setFormData({ ...formData, password: text })}
                                     secureTextEntry={!showPassword}
                                 />
+                                {/* Afficher/masquer le mot de passe */}
                                 <TouchableOpacity
                                     onPress={() => setShowPassword(!showPassword)}
                                     style={styles.eyeIcon}
@@ -200,15 +211,17 @@ const LoginScreen = ({ navigation, route }) => {
                                     <Ionicons
                                         name={showPassword ? 'eye-off' : 'eye'}
                                         size={24}
-                                        color="#4CAF50"
+                                        color="#OA1E3F"
                                     />
                                 </TouchableOpacity>
                             </View>
                             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-            </View>
+                        </View>
 
+                        {/* Message d’erreur global */}
                         {error && <Text style={styles.errorText}>{error}</Text>}
 
+                        {/* Bouton de renvoi de l’email de vérification */}
                         {showResend && (
                             <TouchableOpacity
                                 style={[styles.loginButton, resendCooldown > 0 && { backgroundColor: '#ccc' }]}
@@ -216,38 +229,43 @@ const LoginScreen = ({ navigation, route }) => {
                                 disabled={loading || resendCooldown > 0}
                             >
                                 <Text style={styles.loginButtonText}>
-                                    {resendCooldown > 0 ? `Renvoyer dans ${resendCooldown}s` : "Renvoyer l'email de vérification"}
+                                    {resendCooldown > 0
+                                        ? `Renvoyer dans ${resendCooldown}s`
+                                        : "Renvoyer l'email de vérification"}
                                 </Text>
                             </TouchableOpacity>
                         )}
 
-            <TouchableOpacity
-                style={styles.loginButton}
+                        {/* Bouton de connexion */}
+                        <TouchableOpacity
+                            style={styles.loginButton}
                             onPress={handleSubmit}
                             disabled={loading}
-            >
+                        >
                             {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.loginButtonText}>Se connecter</Text>
-                )}
-            </TouchableOpacity>
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.loginButtonText}>Se connecter</Text>
+                            )}
+                        </TouchableOpacity>
 
-            <TouchableOpacity
+                        {/* Lien vers l’inscription */}
+                        <TouchableOpacity
                             style={styles.registerLink}
-                onPress={() => navigation.navigate('Register')}
-            >
+                            onPress={() => navigation.navigate('Register')}
+                        >
                             <Text style={styles.registerLinkText}>
-                    Pas encore de compte ? S'inscrire
-                </Text>
-            </TouchableOpacity>
-        </View>
+                                Pas encore de compte ? S'inscrire
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </ScrollView>
             </LinearGradient>
         </KeyboardAvoidingView>
     );
 };
 
+// Styles de l’écran
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -274,19 +292,18 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 20,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
     },
     logo: {
-        width: 150,
-        height: 150,
-        alignSelf: 'center',
-        marginBottom: 20,
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 20,
+    borderRadius: 75,
+    overflow: 'hidden'
     },
     inputContainer: {
         marginBottom: 15,
@@ -295,7 +312,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#4CAF50',
+        borderColor: '#0A1E3F',
         borderRadius: 8,
         backgroundColor: '#fff',
     },
@@ -317,15 +334,16 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     loginButton: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#0A1E3F',
         height: 50,
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 20,
     },
+    
     loginButtonText: {
-        color: '#fff',
+        color: '#FFF',
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -334,9 +352,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     registerLinkText: {
-        color: '#4CAF50',
+        color: '#0A1E3F',
         fontSize: 16,
     },
 });
 
-export default LoginScreen; 
+export default LoginScreen;

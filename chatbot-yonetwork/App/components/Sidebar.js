@@ -88,160 +88,202 @@ const Sidebar = ({ isVisible, onClose }) => {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.contentContainer}>
-                <ScrollView style={styles.scrollView}>
-                    <View style={styles.profileSection}>
-                        <Image
-                            source={user?.avatar ? { uri: user.avatar } : require('../../assets/newlogo.png')}
-                            style={styles.avatar}
-                        />
-                        <Text style={styles.userName}>{user?.name || 'Utilisateur'}</Text>
-                        <Text style={styles.userEmail}>{user?.email || ''}</Text>
-                    </View>
+        // Conteneur principal de l'écran
+<View style={styles.container} >
 
-                    <View style={styles.navigationSection}>
-                        <TouchableOpacity 
-                            style={styles.navItem}
-                            onPress={() => {
-                                navigation.navigate('Home');
-                                onClose();
-                            }}
-                        >
-                            <MaterialIcons name="home" size={24} color="#4CAF50" />
-                            <Text style={styles.navText}>Accueil</Text>
-                        </TouchableOpacity>
+    {/* Conteneur interne avec style de contenu */}
+    <View style={styles.contentContainer}>
 
-                        <TouchableOpacity 
-                            style={styles.navItem}
-                            onPress={() => {
-                                navigation.navigate('Chat', { 
-                                    selectedFace: {
-                                        id: 1,
-                                        name: "Chatbot Yonetwork",
-                                        image: "https://img.freepik.com/premium-vector/mascot-robot-pack_844941-9.jpg?ga=GA1.1.2115268387.1745576145&semt=ais_hybrid&w=740"
-                                    },
-                                    resetConversation: true
-                                });
-                                onClose();
-                            }}
-                        >
-                            <MaterialIcons name="chat" size={24} color="#4CAF50" />
-                            <Text style={styles.navText}>Nouvelle conversation</Text>
-                        </TouchableOpacity>
+        {/* ScrollView permet le défilement vertical du contenu */}
+        <ScrollView style={styles.scrollView}>
 
-                        <View style={styles.historySection}>
-                            <Text style={styles.sectionTitle}>Historique & Réseaux Sociaux</Text>
-                            <HistoryFavorites />
-                        </View>
-                    </View>
-
-                    {/* Confirmation de déconnexion personnalisée */}
-                    {showLogoutConfirm && (
-                        <View style={styles.confirmContainer}>
-                            <View style={styles.confirmBox}>
-                                <Text style={styles.confirmTitle}>Déconnexion</Text>
-                                <Text style={styles.confirmText}>Êtes-vous sûr de vouloir vous déconnecter ?</Text>
-                                <View style={styles.confirmButtons}>
-                                    <TouchableOpacity 
-                                        style={[styles.confirmButton, styles.cancelButton]}
-                                        onPress={cancelLogout}
-                                    >
-                                        <Text style={styles.cancelButtonText}>Annuler</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity 
-                                        style={[styles.confirmButton, styles.confirmLogoutButton]}
-                                        onPress={performLogout}
-                                    >
-                                        <Text style={styles.confirmLogoutText}>Déconnecter</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    )}
-
-                    {/* Bouton de déconnexion amélioré avec indicateur de chargement */}
-                    <View style={styles.footerContainer}>
-                    <TouchableOpacity 
-                            style={[
-                                styles.logoutButton,
-                                isLoggingOut && styles.logoutButtonDisabled
-                            ]}
-                            onPress={handleLogoutPress}
-                            disabled={isLoggingOut}
-                        >
-                            {isLoggingOut ? (
-                                <>
-                                    <ActivityIndicator size="small" color="#fff" />
-                                    <Text style={styles.logoutText}>Déconnexion en cours...</Text>
-                                </>
-                            ) : (
-                                <>
-                                    <Ionicons name="log-out-outline" size={24} color="#fff" />
-                                    <Text style={styles.logoutText}>Déconnexion</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
-                        </View>
-                </ScrollView>
+            {/* Section du profil utilisateur */}
+            <View style={styles.profileSection}>
+                {/* Affiche l'avatar de l'utilisateur ou une image par défaut */}
+                <Image
+                    source={user?.avatar ? { uri: user.avatar } : require('../../assets/favicon.jpg')}
+                    style={styles.avatar}
+                />
+                {/* Nom de l'utilisateur ou texte par défaut */}
+                <Text style={styles.userName}>{user?.name || 'Utilisateur'}</Text>
+                {/* Email de l'utilisateur */}
+                <Text style={styles.userEmail}>{user?.email || ''}</Text>
             </View>
-        </View>
+
+            {/* Section de navigation */}
+            <View style={styles.navigationSection}>
+
+                {/* Bouton vers l'écran d'accueil */}
+                <TouchableOpacity 
+                    style={styles.navItem}
+                    onPress={() => {
+                        navigation.navigate('Home'); // Navigue vers l'accueil
+                        onClose(); // Ferme le menu ou le drawer
+                    }}
+                >
+                    <MaterialIcons name="home" size={24} color="#ffffff" />
+                    <Text style={styles.navText}>Accueil</Text>
+                </TouchableOpacity>
+
+                {/* Bouton pour démarrer une nouvelle conversation avec un bot */}
+                <TouchableOpacity 
+                    style={styles.navItem}
+                    onPress={() => {
+                        navigation.navigate('Chat', { 
+                            selectedFace: {
+                                id: 1,
+                                name: "Souk Bot",
+                                image: "https://img.freepik.com/premium-vector/mascot-robot-pack_844941-9.jpg?ga=GA1.1.2115268387.1745576145&semt=ais_hybrid&w=740"
+                            },
+                            resetConversation: true
+                        });
+                        onClose(); // Ferme le menu ou le drawer
+                    }}
+                >
+                    <MaterialIcons name="chat" size={24} color="#ffffff" />
+                    <Text style={styles.navText}>Nouvelle conversation</Text>
+                </TouchableOpacity>
+
+                {/* Section affichant l'historique et les réseaux sociaux */}
+                <View style={styles.historySection}>
+                    <Text style={styles.sectionTitle}>Historique & Réseaux Sociaux</Text>
+                    {/* Composant personnalisé pour afficher l'historique ou favoris */}
+                    <HistoryFavorites />
+                </View>
+            </View>
+
+            {/* Fenêtre de confirmation avant la déconnexion */}
+            {showLogoutConfirm && (
+                <View style={styles.confirmContainer}>
+                    <View style={styles.confirmBox}>
+                        <Text style={styles.confirmTitle}>Déconnexion</Text>
+                        <Text style={styles.confirmText}>Êtes-vous sûr de vouloir vous déconnecter ?</Text>
+
+                        {/* Boutons d'action pour confirmer ou annuler */}
+                        <View style={styles.confirmButtons}>
+                            <TouchableOpacity 
+                                style={[styles.confirmButton, styles.cancelButton]}
+                                onPress={cancelLogout} // Annule la déconnexion
+                            >
+                                <Text style={styles.cancelButtonText}>Annuler</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.confirmButton, styles.confirmLogoutButton]}
+                                onPress={performLogout} // Exécute la déconnexion
+                            >
+                                <Text style={styles.confirmLogoutText}>Déconnecter</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
+
+            {/* Bouton de déconnexion avec indicateur de chargement si actif */}
+            <View style={styles.footerContainer}>
+                <TouchableOpacity 
+                    style={[
+                        styles.logoutButton,
+                        isLoggingOut && styles.logoutButtonDisabled // Style désactivé si déjà en cours
+                    ]}
+                    onPress={handleLogoutPress}
+                    disabled={isLoggingOut} // Désactive le bouton pendant la déconnexion
+                >
+                    {isLoggingOut ? (
+                        <>
+                            {/* Affiche un loader pendant le processus de déconnexion */}
+                            <ActivityIndicator size="small" color="#ffffff" />
+                            <Text style={styles.logoutText}>Déconnexion en cours...</Text>
+                        </>
+                    ) : (
+                        <>
+                            <Ionicons name="log-out-outline" size={24} color="#ffffff" />
+                            <Text style={styles.logoutText}>Déconnexion</Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+            </View>
+
+        </ScrollView>
+    </View>
+</View>
+
     );
 };
 
 const styles = StyleSheet.create({
+    // Conteneur principal de l'application
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#0A1E3F'
     },
+    // Conteneur pour le contenu intérieur
     contentContainer: {
         flex: 1,
-        paddingTop: 40, // Ajout d'un espacement en haut pour compenser la suppression du header
+        paddingTop: 40, // Ajoute un espace en haut pour éviter le chevauchement avec le haut de l'écran
+        backgroundColor: '#0A1E3F'
     },
+
+    // ScrollView pour le contenu déroulant
     scrollView: {
         flex: 1,
     },
+
+    // Section contenant l'image et les infos utilisateur
     profileSection: {
-        alignItems: 'center',
-        paddingVertical: 20,
-        backgroundColor: '#f8f9fa',
+        alignItems: 'center', // Centre les éléments horizontalement
+        paddingVertical: 20, // Espace haut/bas
+        backgroundColor: '#0A1E3F',
         marginHorizontal: 10,
         marginTop: 10,
-        borderRadius: 10,
+        borderRadius: 10, // Coins arrondis
     },
+
+    // Avatar de l'utilisateur
     avatar: {
         width: 80,
         height: 80,
-        borderRadius: 40,
+        borderRadius: 40, // Cercle parfait
         marginBottom: 10,
         backgroundColor: '#f0f0f0',
     },
+
+    // Nom d'utilisateur
     userName: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#333',
+        color: '#f8f9fa',
         marginBottom: 5,
     },
+
+    // Email de l'utilisateur
     userEmail: {
         fontSize: 14,
         color: '#666',
     },
+
+    // Section de navigation
     navigationSection: {
         padding: 15,
         flex: 1,
     },
+
+    // Élément de navigation (ex : Accueil, Chat)
     navItem: {
-        flexDirection: 'row',
+        flexDirection: 'row', // Affiche l'icône et le texte côte à côte
         alignItems: 'center',
         padding: 15,
         borderRadius: 8,
         marginBottom: 5,
     },
+
+    // Texte à côté de l'icône de navigation
     navText: {
         marginLeft: 15,
         fontSize: 16,
-        color: '#333',
+        color: '#ffffff',
     },
+
+    // Section d'historique et de réseaux sociaux
     historySection: {
         marginTop: 20,
         marginBottom: 20,
@@ -249,20 +291,26 @@ const styles = StyleSheet.create({
         borderTopColor: '#eee',
         paddingTop: 15,
     },
+
+    // Titre de la section
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
+        color: '#f8f9fa',
         marginBottom: 15,
         paddingHorizontal: 15,
     },
+
+    // Conteneur en bas avec le bouton de déconnexion
     footerContainer: {
         borderTopWidth: 1,
         borderTopColor: '#e0e0e0',
         paddingVertical: 15,
         paddingHorizontal: 20,
-        marginTop: 'auto'
+        marginTop: 'auto' // Push en bas de l'écran
     },
+
+    // Style du bouton de déconnexion
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -277,30 +325,39 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5,
+        elevation: 5, // Effet d’ombre pour Android
     },
+
+    // Style lorsque le bouton est désactivé
     logoutButtonDisabled: {
         backgroundColor: '#FF8A80',
         opacity: 0.7,
     },
+
+    // Texte à l'intérieur du bouton de déconnexion
     logoutText: {
         color: '#fff',
         marginLeft: 10,
         fontSize: 16,
         fontWeight: '600',
     },
-    // Styles pour la confirmation personnalisée
+
+    // ✅ Styles pour la boîte de confirmation de déconnexion
+
+    // Conteneur semi-transparent plein écran
     confirmContainer: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.5)', // Fond assombri
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 2000,
+        zIndex: 2000, // Très au-dessus
     },
+
+    // Boîte blanche au centre avec contenu de confirmation
     confirmBox: {
         backgroundColor: 'white',
         borderRadius: 10,
@@ -316,21 +373,29 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+
+    // Titre de la boîte de confirmation
     confirmTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
     },
+
+    // Texte d'information de la boîte de confirmation
     confirmText: {
         fontSize: 14,
         marginBottom: 20,
         textAlign: 'center',
     },
+
+    // Conteneur pour les boutons "Annuler" et "Déconnecter"
     confirmButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
     },
+
+    // Style de base pour les deux boutons
     confirmButton: {
         paddingVertical: 10,
         paddingHorizontal: 20,
@@ -339,15 +404,23 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         alignItems: 'center',
     },
+
+    // Bouton "Annuler"
     cancelButton: {
         backgroundColor: '#f0f0f0',
     },
+
+    // Bouton "Déconnecter"
     confirmLogoutButton: {
         backgroundColor: '#FF5252',
     },
+
+    // Texte du bouton "Annuler"
     cancelButtonText: {
         color: '#333',
     },
+
+    // Texte du bouton "Déconnecter"
     confirmLogoutText: {
         color: 'white',
         fontWeight: 'bold',

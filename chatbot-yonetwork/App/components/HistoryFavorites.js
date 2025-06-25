@@ -295,272 +295,372 @@ const HistoryFavorites = () => {
         }
     };
 
-    const renderConversationItem = ({ item }) => (
-        <TouchableOpacity 
-            style={[
-                styles.conversationItem,
-                currentConversationId === item.id && styles.currentConversationItem
-            ]}
-            onPress={() => {
-                navigation.navigate('Chat', { conversationId: item.id });
-            }}
-        >
-            <View style={styles.conversationInfo}>
-                <Text style={styles.conversationTitle} numberOfLines={1}>{item.title}</Text>
-                <Text style={styles.conversationMessage} numberOfLines={2}>{item.lastMessage}</Text>
-                <View style={styles.conversationMeta}>
-                    <Text style={styles.conversationTime}>
-                        {new Date(item.timestamp).toLocaleDateString()}
-                    </Text>
-                </View>
+    // Fonction de rendu pour un élément de conversation
+const renderConversationItem = ({ item }) => (
+    <TouchableOpacity 
+        style={[
+            styles.conversationItem,
+            // Applique un style spécial si c'est la conversation actuellement ouverte
+            currentConversationId === item.id && styles.currentConversationItem
+        ]}
+        onPress={() => {
+            // Navigation vers l'écran "Chat" avec l'ID de la conversation sélectionnée
+            navigation.navigate('Chat', { conversationId: item.id });
+        }}
+    >
+        <View style={styles.conversationInfo}>
+            {/* Titre de la conversation, limité à une ligne */}
+            <Text style={styles.conversationTitle} numberOfLines={1}>
+                {item.title}
+            </Text>
+
+            {/* Dernier message échangé, limité à deux lignes */}
+            <Text style={styles.conversationMessage} numberOfLines={2}>
+                {item.lastMessage}
+            </Text>
+
+            {/* Date du dernier message */}
+            <View style={styles.conversationMeta}>
+                <Text style={styles.conversationTime}>
+                    {new Date(item.timestamp).toLocaleDateString()}
+                </Text>
             </View>
-            {currentConversationId === item.id && (
-                <View style={styles.currentIndicator} />
-            )}
-        </TouchableOpacity>
-    );
-
-    const renderSectionHeader = ({ section }) => (
-        <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>{section.title}</Text>
-            <View style={styles.sectionDivider} />
         </View>
-    );
 
-    const renderSocialMediaItem = ({ item }) => (
-        <TouchableOpacity 
-            style={[styles.socialMediaItem, { borderLeftColor: item.color }]}
-            onPress={() => handleSocialMediaPress(item.url)}
-        >
-            <FontAwesome5 name={item.icon} size={20} color={item.color} style={styles.socialIcon} />
-            <Text style={styles.socialName}>{item.name}</Text>
-            <Ionicons name="open-outline" size={18} color="#666" style={styles.openIcon} />
-        </TouchableOpacity>
-    );
+        {/* Indicateur visuel si cette conversation est la conversation en cours */}
+        {currentConversationId === item.id && (
+            <View style={styles.currentIndicator} />
+        )}
+    </TouchableOpacity>
+);
 
-    const renderTabContent = () => {
-        console.log("Rendu du contenu de l'onglet:", activeTab);
-        
-        switch (activeTab) {
-            case 'recent':
-                return (
-                    <View style={styles.tabContent}>
-                        {isLoading ? (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color="#4CAF50" />
-                                <Text style={styles.loadingText}>Chargement...</Text>
-                            </View>
-                        ) : error ? (
-                            <View style={styles.errorContainer}>
-                                <Text style={styles.errorText}>{error}</Text>
-                                <TouchableOpacity 
-                                    style={styles.retryButton}
-                                    onPress={loadData}
-                                >
-                                    <Text style={styles.retryText}>Réessayer</Text>
-                                </TouchableOpacity>
-                            </View>
-                        ) : conversations.length > 0 ? (
-                            <ScrollView style={styles.scrollableContainer}>
-                                {Object.entries(groupedConversations).map(([period, convs]) => (
-                                    <View key={period}>
-                                        <View style={styles.sectionHeader}>
-                                            <Text style={styles.sectionHeaderText}>{period}</Text>
-                                            <View style={styles.sectionDivider} />
-                                        </View>
-                                        {convs.map(conversation => (
-                                            <TouchableOpacity 
-                                                key={conversation.id}
-                                                style={[
-                                                    styles.conversationItem,
-                                                    currentConversationId === conversation.id && styles.currentConversationItem
-                                                ]}
-                                                onPress={() => {
-                                                    navigation.navigate('Chat', { conversationId: conversation.id });
-                                                }}
-                                            >
-                                                <View style={styles.conversationInfo}>
-                                                    <Text style={styles.conversationTitle} numberOfLines={1}>{conversation.title}</Text>
-                                                    <Text style={styles.conversationMessage} numberOfLines={2}>{conversation.lastMessage}</Text>
-                                                    <View style={styles.conversationMeta}>
-                                                        <Text style={styles.conversationTime}>
-                                                            {new Date(conversation.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                                {currentConversationId === conversation.id && (
-                                                    <View style={styles.currentIndicator} />
-                                                )}
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                ))}
-                            </ScrollView>
-                        ) : (
-                            <View style={styles.emptyContainer}>
-                                <Text style={styles.emptyText}>Aucune conversation récente</Text>
-                            </View>
-                        )}
-                    </View>
-                );
-            
-            case 'social':
-                return (
-                    <View style={styles.tabContent}>
-                        <FlatList
-                            data={SOCIAL_MEDIA}
-                            renderItem={renderSocialMediaItem}
-                            keyExtractor={item => item.id}
-                            contentContainerStyle={styles.listContent}
-                        />
-                    </View>
-                );
-            
-            case 'search':
-                return (
-                    <View style={styles.tabContent}>
-                        <View style={styles.searchInputContainer}>
-                            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder="Rechercher dans l'historique..."
-                                value={searchQuery}
-                                onChangeText={handleSearch}
-                                autoCapitalize="none"
-                            />
-                            {searchQuery.length > 0 && (
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setSearchQuery('');
-                                        setSearchResults([]);
-                                    }}
-                                >
-                                    <Ionicons name="close-circle" size={20} color="#666" />
-                                </TouchableOpacity>
-                            )}
+// Fonction de rendu pour un en-tête de section (ex: pour regrouper par jour, semaine, etc.)
+const renderSectionHeader = ({ section }) => (
+    <View style={styles.sectionHeader}>
+        {/* Titre de la section (ex: "Aujourd'hui", "Semaine dernière") */}
+        <Text style={styles.sectionHeaderText}>{section.title}</Text>
+
+        {/* Ligne séparatrice décorative */}
+        <View style={styles.sectionDivider} />
+    </View>
+);
+
+// Fonction de rendu pour un élément de réseau social (ex: Facebook, Twitter...)
+const renderSocialMediaItem = ({ item }) => (
+    <TouchableOpacity 
+        // Affiche une bordure colorée à gauche basée sur la couleur du réseau
+        style={[styles.socialMediaItem, { borderLeftColor: item.color }]}
+        onPress={() => handleSocialMediaPress(item.url)} // Ouvre le lien du réseau social
+    >
+        {/* Icône du réseau social */}
+        <FontAwesome5 
+            name={item.icon} 
+            size={20} 
+            color={item.color} 
+            style={styles.socialIcon} 
+        />
+
+        {/* Nom du réseau social (ex: Facebook, Twitter) */}
+        <Text style={styles.socialName}>{item.name}</Text>
+
+        {/* Icône "ouvrir" pour indiquer que cela mène à un lien externe */}
+        <Ionicons 
+            name="open-outline" 
+            size={18} 
+            color="#0A1E3F" 
+            style={styles.openIcon} 
+        />
+    </TouchableOpacity>
+);
+
+
+    // Fonction qui retourne dynamiquement le contenu selon l'onglet actif
+const renderTabContent = () => {
+    console.log("Rendu du contenu de l'onglet:", activeTab);
+
+    switch (activeTab) {
+        case 'recent': // ✅ Onglet des conversations récentes
+            return (
+                <View style={styles.tabContent}>
+                    {isLoading ? (
+                        // Affiche un loader pendant le chargement
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#0A1E3F" />
+                            <Text style={styles.loadingText}>Chargement...</Text>
                         </View>
-                        
-                        {searchQuery.length > 0 ? (
-                            searchResults && searchResults.length > 0 ? (
-                                <FlatList
-                                    data={searchResults}
-                                    renderItem={renderConversationItem}
-                                    keyExtractor={item => item.id.toString()}
-                                    contentContainerStyle={styles.listContent}
-                                />
-                            ) : (
-                                <View style={styles.emptyContainer}>
-                                    <Text style={styles.emptyText}>Aucun résultat trouvé</Text>
+                    ) : error ? (
+                        // Affiche un message d'erreur avec un bouton "Réessayer"
+                        <View style={styles.errorContainer}>
+                            <Text style={styles.errorText}>{error}</Text>
+                            <TouchableOpacity 
+                                style={styles.retryButton}
+                                onPress={loadData}
+                            >
+                                <Text style={styles.retryText}>Réessayer</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : conversations.length > 0 ? (
+                        // Si des conversations existent, les affiche groupées par période
+                        <ScrollView style={styles.scrollableContainer}>
+                            {Object.entries(groupedConversations).map(([period, convs]) => (
+                                <View key={period}>
+                                    {/* En-tête de période (ex: "Aujourd’hui", "Hier") */}
+                                    <View style={styles.sectionHeader}>
+                                        <Text style={styles.sectionHeaderText}>{period}</Text>
+                                        <View style={styles.sectionDivider} />
+                                    </View>
+
+                                    {/* Liste des conversations pour cette période */}
+                                    {convs.map(conversation => (
+                                        <TouchableOpacity 
+                                            key={conversation.id}
+                                            style={[
+                                                styles.conversationItem,
+                                                // Style spécial si cette conversation est active
+                                                currentConversationId === conversation.id && styles.currentConversationItem
+                                            ]}
+                                            onPress={() => {
+                                                // Ouvre la conversation dans l'écran "Chat"
+                                                navigation.navigate('Chat', { conversationId: conversation.id });
+                                            }}
+                                        >
+                                            <View style={styles.conversationInfo}>
+                                                <Text style={styles.conversationTitle} numberOfLines={1}>
+                                                    {conversation.title}
+                                                </Text>
+                                                <Text style={styles.conversationMessage} numberOfLines={2}>
+                                                    {conversation.lastMessage}
+                                                </Text>
+                                                <View style={styles.conversationMeta}>
+                                                    <Text style={styles.conversationTime}>
+                                                        {/* Format de l’heure du dernier message */}
+                                                        {new Date(conversation.timestamp).toLocaleTimeString([], {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </Text>
+                                                </View>
+                                            </View>
+
+                                            {/* Indicateur visuel si la conversation est active */}
+                                            {currentConversationId === conversation.id && (
+                                                <View style={styles.currentIndicator} />
+                                            )}
+                                        </TouchableOpacity>
+                                    ))}
                                 </View>
-                            )
-                        ) : (
-                            <View style={styles.emptyContainer}>
-                                <Text style={styles.emptyText}>Entrez un terme de recherche</Text>
-                            </View>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        // Aucun historique à afficher
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Aucune conversation récente</Text>
+                        </View>
+                    )}
+                </View>
+            );
+
+        case 'social': // ✅ Onglet des réseaux sociaux
+            return (
+                <View style={styles.tabContent}>
+                    <FlatList
+                        data={SOCIAL_MEDIA} // Données des réseaux sociaux
+                        renderItem={renderSocialMediaItem} // Fonction pour afficher chaque réseau
+                        keyExtractor={item => item.id} // Clé unique
+                        contentContainerStyle={styles.listContent}
+                    />
+                </View>
+            );
+
+        case 'search': // ✅ Onglet de recherche
+            return (
+                <View style={styles.tabContent}>
+                    {/* Champ de recherche avec icône de loupe */}
+                    <View style={styles.searchInputContainer}>
+                        <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Rechercher dans l'historique..."
+                            value={searchQuery}
+                            onChangeText={handleSearch} // Gère la saisie utilisateur
+                            autoCapitalize="none"
+                        />
+
+                        {/* Bouton pour vider la recherche */}
+                        {searchQuery.length > 0 && (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSearchQuery('');
+                                    setSearchResults([]);
+                                }}
+                            >
+                                <Ionicons name="close-circle" size={20} color="#666" />
+                            </TouchableOpacity>
                         )}
                     </View>
-                );
-            
-            default:
-                return null;
-        }
-    };
+
+                    {/* Résultats de recherche */}
+                    {searchQuery.length > 0 ? (
+                        searchResults && searchResults.length > 0 ? (
+                            <FlatList
+                                data={searchResults}
+                                renderItem={renderConversationItem}
+                                keyExtractor={item => item.id.toString()}
+                                contentContainerStyle={styles.listContent}
+                            />
+                        ) : (
+                            // Aucun résultat trouvé
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>Aucun résultat trouvé</Text>
+                            </View>
+                        )
+                    ) : (
+                        // L'utilisateur n'a rien encore saisi
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Entrez un terme de recherche</Text>
+                        </View>
+                    )}
+                </View>
+            );
+
+        default:
+            return null; // Pour tout autre onglet non reconnu
+    }
+};
+
 
     return (
         <View style={styles.container}>
-            <View style={styles.tabsContainer}>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'recent' && styles.activeTab]}
-                    onPress={() => {
-                        console.log("Onglet recent pressé");
-                        setActiveTab('recent');
-                    }}
-                >
-                    <MaterialIcons
-                        name="history"
-                        size={24}
-                        color={activeTab === 'recent' ? '#4CAF50' : '#999'}
-                    />
-                    <Text style={[styles.tabLabel, activeTab === 'recent' && styles.activeTabLabel]}>Récent</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'social' && styles.activeTab]}
-                    onPress={() => {
-                        console.log("Onglet social pressé");
-                        setActiveTab('social');
-                    }}
-                >
-                    <MaterialIcons
-                        name="people"
-                        size={24}
-                        color={activeTab === 'social' ? '#4CAF50' : '#999'}
-                    />
-                    <Text style={[styles.tabLabel, activeTab === 'social' && styles.activeTabLabel]}>Réseaux</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'search' && styles.activeTab]}
-                    onPress={() => {
-                        console.log("Onglet search pressé");
-                        setActiveTab('search');
-                    }}
-                >
-                    <MaterialIcons
-                        name="search"
-                        size={24}
-                        color={activeTab === 'search' ? '#4CAF50' : '#999'}
-                    />
-                    <Text style={[styles.tabLabel, activeTab === 'search' && styles.activeTabLabel]}>Recherche</Text>
-                </TouchableOpacity>
-            </View>
-            
-            {renderTabContent()}
-        </View>
+    
+    {/* --- Barre d'onglets supérieure --- */}
+    <View style={styles.tabsContainer}>
+
+        {/* --- Onglet "Récent" --- */}
+        <TouchableOpacity
+            style={[styles.tab, activeTab === 'recent' && styles.activeTab]} // Style actif si onglet sélectionné
+            onPress={() => {
+                console.log("Onglet recent pressé");
+                setActiveTab('recent'); // Active l'onglet "recent"
+            }}
+        >
+            {/* Icône horloge pour "Historique" */}
+            <MaterialIcons
+                name="history"
+                size={24}
+                color={activeTab === 'recent' ? '#0A1E3F' : '#999'} // Couleur différente si actif
+            />
+            {/* Libellé de l'onglet */}
+            <Text style={[styles.tabLabel, activeTab === 'recent' && styles.activeTabLabel]}>
+                Récent
+            </Text>
+        </TouchableOpacity>
+
+        {/* --- Onglet "Réseaux" --- */}
+        <TouchableOpacity
+            style={[styles.tab, activeTab === 'social' && styles.activeTab]}
+            onPress={() => {
+                console.log("Onglet social pressé");
+                setActiveTab('social'); // Active l'onglet "social"
+            }}
+        >
+            {/* Icône utilisateurs */}
+            <MaterialIcons
+                name="people"
+                size={24}
+                color={activeTab === 'social' ? '#0A1E3F' : '#999'}
+            />
+            {/* Libellé de l'onglet */}
+            <Text style={[styles.tabLabel, activeTab === 'social' && styles.activeTabLabel]}>
+                Réseaux
+            </Text>
+        </TouchableOpacity>
+
+        {/* --- Onglet "Recherche" --- */}
+        <TouchableOpacity
+            style={[styles.tab, activeTab === 'search' && styles.activeTab]}
+            onPress={() => {
+                console.log("Onglet search pressé");
+                setActiveTab('search'); // Active l'onglet "search"
+            }}
+        >
+            {/* Icône loupe */}
+            <MaterialIcons
+                name="search"
+                size={24}
+                color={activeTab === 'search' ? '#0A1E3F' : '#999'}
+            />
+            {/* Libellé de l'onglet */}
+            <Text style={[styles.tabLabel, activeTab === 'search' && styles.activeTabLabel]}>
+                Recherche
+            </Text>
+        </TouchableOpacity>
+    </View>
+
+    {/* --- Affiche le contenu en fonction de l’onglet actif --- */}
+    {renderTabContent()}
+</View>
+
     );
 };
 
 const styles = StyleSheet.create({
+    // Conteneur principal de la vue
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 10,
-        overflow: 'hidden',
+        backgroundColor: '#f5f5f5', // fond gris clair
+        borderRadius: 10, // coins arrondis
+        overflow: 'hidden', // évite que les enfants dépassent
         marginTop: 10
     },
+
+    // Conteneur des onglets (barre en haut)
     tabsContainer: {
-        flexDirection: 'row',
+        flexDirection: 'row', // affichage horizontal
         backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
     },
+
+    // Style général d’un onglet
     tab: {
         flex: 1,
         alignItems: 'center',
         paddingVertical: 10,
-        flexDirection: 'row',
-        justifyContent: 'center'
+        flexDirection: 'row', // icône + texte côte à côte
+        justifyContent: 'center',
     },
+
+    // Style appliqué à l’onglet actif
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#4CAF50',
+        borderBottomColor: '#4CAF50', // vert clair
     },
+
+    // Texte des onglets
     tabLabel: {
         fontSize: 12,
-        color: '#999',
+        color: '#0A1E3F',
         marginLeft: 4
     },
+
+    // Style du texte d’un onglet actif
     activeTabLabel: {
         color: '#4CAF50',
         fontWeight: 'bold'
     },
+
+    // Conteneur du contenu affiché dans chaque onglet
     tabContent: {
         flex: 1,
         padding: 10
     },
+
+    // Padding pour le contenu scrollable
     listContent: {
         paddingBottom: 10
     },
+
+    // Élément de conversation
     conversationItem: {
         backgroundColor: '#fff',
         borderRadius: 8,
@@ -575,11 +675,15 @@ const styles = StyleSheet.create({
         elevation: 1,
         position: 'relative'
     },
+
+    // Style spécial pour la conversation sélectionnée
     currentConversationItem: {
         borderLeftWidth: 4,
         borderLeftColor: '#4CAF50',
         backgroundColor: '#f0f9f0'
     },
+
+    // Petit indicateur visuel sur la droite pour la conversation active
     currentIndicator: {
         position: 'absolute',
         right: 0,
@@ -590,87 +694,110 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 8,
         borderBottomRightRadius: 8
     },
+
+    // Conteneur texte + infos de la conversation
     conversationInfo: {
         flex: 1
     },
+
     conversationTitle: {
         fontWeight: 'bold',
         fontSize: 14,
         color: '#333'
     },
+
     conversationMessage: {
         fontSize: 12,
         color: '#666',
         marginTop: 4
     },
+
     conversationMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginTop: 6
     },
+
     conversationTime: {
         fontSize: 10,
         color: '#999'
     },
+
+    // En-tête de section (ex: Aujourd’hui, Hier…)
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 8,
         paddingHorizontal: 4
     },
+
     sectionHeaderText: {
         fontSize: 12,
         fontWeight: 'bold',
         color: '#666',
         marginRight: 8
     },
+
     sectionDivider: {
         flex: 1,
         height: 1,
         backgroundColor: '#e0e0e0'
     },
+
+    // Conteneur d'attente (chargement)
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20
     },
+
     loadingText: {
         marginTop: 10,
         color: '#666'
     },
+
+    // Conteneur en cas d'erreur
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20
     },
+
     errorText: {
         color: '#d32f2f',
         textAlign: 'center',
         marginBottom: 10
     },
+
     retryButton: {
         backgroundColor: '#4CAF50',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 4
     },
+
     retryText: {
         color: '#fff',
         fontWeight: 'bold'
     },
+
+    // Conteneur en cas de données vides
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20
     },
+
     emptyText: {
         color: '#999',
         textAlign: 'center'
     },
+
+    // Barre de recherche
     searchInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -682,13 +809,17 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
         height: 40
     },
+
     searchIcon: {
         marginRight: 8
     },
+
     searchInput: {
         flex: 1,
         height: 40
     },
+
+    // Élément de réseau social
     socialMediaItem: {
         backgroundColor: '#fff',
         borderRadius: 8,
@@ -701,20 +832,25 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 2,
         elevation: 1,
-        borderLeftWidth: 4
+        borderLeftWidth: 4 // couleur dynamique selon la plateforme (Facebook, Twitter…)
     },
+
     socialIcon: {
         marginRight: 12
     },
+
     socialName: {
         flex: 1,
         fontWeight: 'bold',
         fontSize: 14,
         color: '#333'
     },
+
     openIcon: {
         marginLeft: 8
     },
+
+    // Limite la hauteur des scrollView dans certaines vues
     scrollableContainer: {
         flex: 1,
         width: '100%',

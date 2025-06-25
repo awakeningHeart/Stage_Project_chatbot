@@ -216,7 +216,7 @@ const AuthScreen = ({ navigation, route }) => {
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <View style={styles.logoContainer}>
                         <Image
-                            source={require('../../assets/newlogo.png')}
+                            source={require('../../assets/favicon.jpg')}
                             style={styles.logo}
                             resizeMode="contain"
                             onError={(e) => console.log('Erreur de chargement de l\'image:', e.nativeEvent.error)}

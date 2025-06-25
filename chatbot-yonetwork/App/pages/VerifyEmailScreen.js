@@ -129,7 +129,7 @@ const VerifyEmailScreen = () => {
         <ScrollView style={styles.scrollView}>
             <View style={styles.container}>
                 <Image
-                    source={require('../../assets/newlogo.png')}
+                    source={require('../../assets/favicon.jpg')}
                     style={styles.logo}
                     resizeMode="contain"
                 />
