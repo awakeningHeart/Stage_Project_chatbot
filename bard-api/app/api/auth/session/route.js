@@ -60,7 +60,7 @@ export async function GET(request) {
     
     try {
         // Extraire le token d'authentification
-        const headersList = headers();
+        const headersList = await headers();
         const authHeader = headersList.get('authorization');
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -131,7 +131,7 @@ export async function DELETE(request) {
     
     try {
         // Extraire le token d'authentification
-        const headersList = headers();
+        const headersList = await headers();
         const authHeader = headersList.get('authorization');
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -182,4 +182,4 @@ export async function DELETE(request) {
             { status: 500, headers: corsHeaders }
         );
     }
-} 
+}

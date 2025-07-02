@@ -9,8 +9,8 @@ class ChatService {
     constructor() {
         this.conversation = null;
         // Définir les messages spécifiques à Yonetwork
-        this.yonetworkIntro = "Bonjour ! Je suis l'assistant virtuel de Yonetwork. Je peux vous aider avec des informations sur notre entreprise, nos services, nos horaires ou nos coordonnées. Comment puis-je vous aider aujourd'hui ?";
-        this.outOfScopeMessage = "Je suis désolé, mais je suis spécialisé uniquement dans les informations concernant l'entreprise Yonetwork. Je ne peux pas répondre à cette question qui semble hors contexte. Puis-je vous aider avec quelque chose concernant Yonetwork ?";
+        this.yonetworkIntro = "Bonjour ! Je suis l'assistant virtuel de SoukBot. Je peux vous aider avec des informations sur notre entreprise, nos services, nos horaires ou nos coordonnées. Comment puis-je vous aider aujourd'hui ?";
+        this.outOfScopeMessage = "Je suis désolé, mais je suis spécialisé uniquement dans les informations concernant l'entreprise SoukBot. Je ne peux pas répondre à cette question qui semble hors contexte. Puis-je vous aider avec quelque chose concernant SoukBot ?";
         
         // Initialiser le validateur de contexte
         this.initializeContextValidator();
@@ -249,7 +249,7 @@ class ChatService {
                     }
                 } else {
                     // Pas de résultats, mais la question est jugée pertinente sémantiquement
-                    botResponse = "Je n'ai pas trouvé d'informations spécifiques sur ce sujet dans notre base de connaissances sur Yonetwork. Pourriez-vous reformuler votre question ou me demander autre chose concernant notre entreprise ?";
+                    botResponse = "Je n'ai pas trouvé d'informations spécifiques sur ce sujet dans notre base de connaissances sur SoukBot. Pourriez-vous reformuler votre question ou me demander autre chose concernant notre entreprise ?";
                 }
 
                 // Mettre en cache la réponse
