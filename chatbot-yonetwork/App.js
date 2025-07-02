@@ -5,10 +5,14 @@ import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import HomeScreenNavigation from './App/navigation/HomeScreenNavigation';
 import { logger } from './App/Services/logger';
 import AuthStorage from './App/Services/AuthStorage';
+import { ThemeProvider, useTheme } from './App/contexts/ThemeContext';
+import { NotificationProvider } from './App/contexts/NotificationContext';
+import WebCompatibilityFixes from './App/components/WebCompatibilityFixes';
 
-export default function App() {
+function AppContent() {
   const [isReady, setIsReady] = useState(false);
   const [isSessionValid, setIsSessionValid] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Vérifier la session au démarrage de l'application
@@ -50,35 +54,50 @@ export default function App() {
 
   if (!isReady) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Chargement...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.text }]}>Chargement...</Text>
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
+    <NavigationContainer theme={{
+      dark: theme.name === 'dark',
+      colors: {
+        primary: theme.colors.primary,
+        background: theme.colors.background,
+        card: theme.colors.card,
+        text: theme.colors.text,
+        border: theme.colors.border,
+        notification: theme.colors.notification,
+      },
+    }}>
+      <StatusBar style={theme.name === 'dark' ? 'light' : 'dark'} />
       <HomeScreenNavigation initialAuthenticated={isSessionValid} />
     </NavigationContainer>
   );
 }
 
+export default function App() {
+  return (
+    <ThemeProvider>
+      <NotificationProvider>
+        <WebCompatibilityFixes />
+        <AppContent />
+      </NotificationProvider>
+    </ThemeProvider>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
   },
 });

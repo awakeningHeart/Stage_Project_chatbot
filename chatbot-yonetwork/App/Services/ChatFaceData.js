@@ -1,7 +1,6 @@
 // Description: This file contains the data for the chat faces used in the application.
 
-
-export default ChatFaceData = [
+const ChatFaceData = [
     {
         id: 1,
         name: "Votre Souk Bot",
@@ -19,7 +18,7 @@ export default ChatFaceData = [
     },
     {
         id: 3,
-        name: "Votre Souk Bott",
+        name: "Votre Souk Bot",
         image: "https://cdn.pixabay.com/photo/2021/09/25/05/25/robot-6654031_1280.png",
         primary: "#FF5733",
         secondary: " ",
@@ -39,7 +38,6 @@ export default ChatFaceData = [
         primary: "#FF5733",
         secondary: " ",
     },
-    
-  
-    
-]
+];
+
+export default ChatFaceData;

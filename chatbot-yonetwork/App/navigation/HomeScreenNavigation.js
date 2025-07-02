@@ -7,6 +7,15 @@ import RegisterScreen from '../pages/RegisterScreen';
 import VerifyEmailScreen from '../pages/VerifyEmailScreen';
 import AuthScreen from '../pages/AuthScreen';
 import { logger } from '../Services/logger';
+import withTheme from '../components/withTheme';
+
+// Appliquer le HOC withTheme à tous les écrans
+const ThemedHomeScreen = withTheme(HomeScreen);
+const ThemedChatScreen = withTheme(ChatScreen);
+const ThemedLoginScreen = withTheme(LoginScreen);
+const ThemedRegisterScreen = withTheme(RegisterScreen);
+const ThemedVerifyEmailScreen = withTheme(VerifyEmailScreen);
+const ThemedAuthScreen = withTheme(AuthScreen);
 
 const Stack = createNativeStackNavigator();
 
@@ -28,42 +37,42 @@ export default function HomeScreenNavigation({ initialAuthenticated = false }) {
         >
             <Stack.Screen 
                 name="Home" 
-                component={HomeScreen}
+                component={ThemedHomeScreen}
                 options={{
                     gestureEnabled: false
                 }}
             />
             <Stack.Screen 
                 name="Login" 
-                component={LoginScreen}
+                component={ThemedLoginScreen}
                 options={{
                     gestureEnabled: true
                 }}
             />
             <Stack.Screen 
                 name="Auth" 
-                component={AuthScreen}
+                component={ThemedAuthScreen}
                 options={{
                     gestureEnabled: true
                 }}
             />
             <Stack.Screen 
                 name="Register" 
-                component={RegisterScreen}
+                component={ThemedRegisterScreen}
                 options={{
                     gestureEnabled: true
                 }}
             />
             <Stack.Screen 
                 name="Chat" 
-                component={ChatScreen}
+                component={ThemedChatScreen}
                 options={{
                     gestureEnabled: true
                 }}
             />
             <Stack.Screen 
                 name="VerifyEmail" 
-                component={VerifyEmailScreen}
+                component={ThemedVerifyEmailScreen}
                 options={{
                     gestureEnabled: false,
                     animation: 'fade'

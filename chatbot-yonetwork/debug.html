@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Debug - Chatbot YoNetwork</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #007bff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug - Chatbot YoNetwork</h1>
+        <p>Cet outil vous aide à diagnostiquer les problèmes de l'application.</p>
+        
+        <div class="test-section">
+            <h3>📱 Informations de l'environnement</h3>
+            <div id="env-info">
+                <p><strong>URL actuelle:</strong> <span id="current-url"></span></p>
+                <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+                <p><strong>Plateforme:</strong> <span id="platform"></span></p>
+                <p><strong>Langue:</strong> <span id="language"></span></p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Test de connectivité réseau</h3>
+            <button onclick="testNetworkConnectivity()">Tester la connexion</button>
+            <button onclick="testBackendConnection()">Tester le backend</button>
+            <div id="network-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎙️ Test des fonctionnalités vocales</h3>
+            <button onclick="testSpeechRecognition()">Tester la reconnaissance vocale</button>
+            <button onclick="testSpeechSynthesis()">Tester la synthèse vocale</button>
+            <div id="voice-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💾 Test du stockage local</h3>
+            <button onclick="testLocalStorage()">Tester localStorage</button>
+            <button onclick="clearLocalStorage()">Vider le cache</button>
+            <div id="storage-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Actions de diagnostic</h3>
+            <button onclick="runFullDiagnostic()">Diagnostic complet</button>
+            <button onclick="exportLogs()">Exporter les logs</button>
+            <div id="diagnostic-results"></div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Remplir les informations de l'environnement
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('platform').textContent = navigator.platform;
+        document.getElementById('language').textContent = navigator.language;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            results.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>\n`;
+            console.log(message);
+        }
+
+        async function testNetworkConnectivity() {
+            const networkResults = document.getElementById('network-results');
+            networkResults.innerHTML = '<p class="info">Test en cours...</p>';
+            
+            try {
+                // Test de connexion Internet
+                const response = await fetch('https://www.google.com/favicon.ico', {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                networkResults.innerHTML = '<p class="success">✅ Connexion Internet OK</p>';
+                log('Connexion Internet: OK', 'success');
+            } catch (error) {
+                networkResults.innerHTML = '<p class="error">❌ Pas de connexion Internet</p>';
+                log('Connexion Internet: ECHEC - ' + error.message, 'error');
+            }
+        }
+
+        async function testBackendConnection() {
+            const networkResults = document.getElementById('network-results');
+            
+            const urls = [
+                'http://localhost:3000/api/test',
+                'http://192.168.56.1:3000/api/test',
+                'http://10.0.2.2:3000/api/test'
+            ];
+
+            for (const url of urls) {
+                try {
+                    log(`Test de connexion: ${url}`, 'info');
+                    const response = await fetch(url, {
+                        method: 'HEAD',
+                        timeout: 5000
+                    });
+                    
+                    if (response.ok) {
+                        networkResults.innerHTML += `<p class="success">✅ Backend accessible: ${url}</p>`;
+                        log(`Backend accessible: ${url}`, 'success');
+                        return;
+                    }
+                } catch (error) {
+                    log(`Echec connexion ${url}: ${error.message}`, 'error');
+                }
+            }
+            
+            networkResults.innerHTML += '<p class="error">❌ Aucun backend accessible</p>';
+            log('Aucun backend accessible', 'error');
+        }
+
+        function testSpeechRecognition() {
+            const voiceResults = document.getElementById('voice-results');
+            
+            if ('webkitSpeechRecognition' in window) {
+                voiceResults.innerHTML = '<p class="success">✅ Reconnaissance vocale supportée</p>';
+                log('Reconnaissance vocale: Supportée', 'success');
+            } else {
+                voiceResults.innerHTML = '<p class="error">❌ Reconnaissance vocale non supportée</p>';
+                log('Reconnaissance vocale: Non supportée', 'error');
+            }
+        }
+
+        function testSpeechSynthesis() {
+            const voiceResults = document.getElementById('voice-results');
+            
+            if ('speechSynthesis' in window) {
+                voiceResults.innerHTML += '<p class="success">✅ Synthèse vocale supportée</p>';
+                log('Synthèse vocale: Supportée', 'success');
+                
+                // Test de parole
+                const utterance = new SpeechSynthesisUtterance('Test de synthèse vocale');
+                utterance.lang = 'fr-FR';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                voiceResults.innerHTML += '<p class="error">❌ Synthèse vocale non supportée</p>';
+                log('Synthèse vocale: Non supportée', 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            const storageResults = document.getElementById('storage-results');
+            
+            try {
+                localStorage.setItem('test', 'valeur-test');
+                const value = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                
+                if (value === 'valeur-test') {
+                    storageResults.innerHTML = '<p class="success">✅ localStorage fonctionne</p>';
+                    log('localStorage: Fonctionne', 'success');
+                } else {
+                    throw new Error('Valeur incorrecte');
+                }
+            } catch (error) {
+                storageResults.innerHTML = '<p class="error">❌ localStorage ne fonctionne pas</p>';
+                log('localStorage: Echec - ' + error.message, 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            try {
+                localStorage.clear();
+                document.getElementById('storage-results').innerHTML += '<p class="success">✅ Cache vidé</p>';
+                log('Cache localStorage vidé', 'success');
+            } catch (error) {
+                log('Erreur lors du vidage du cache: ' + error.message, 'error');
+            }
+        }
+
+        async function runFullDiagnostic() {
+            log('=== DEBUT DU DIAGNOSTIC COMPLET ===', 'info');
+            document.getElementById('results').innerHTML = '';
+            
+            await testNetworkConnectivity();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testBackendConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            testSpeechRecognition();
+            testSpeechSynthesis();
+            testLocalStorage();
+            
+            log('=== FIN DU DIAGNOSTIC ===', 'info');
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('results').textContent;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatbot-debug-${new Date().toISOString().slice(0, 19)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Démarrer un diagnostic automatique au chargement
+        window.onload = function() {
+            log('Page de debug chargée', 'info');
+            setTimeout(runFullDiagnostic, 1000);
+        };
+    </script>
+</body>
+</html> 
